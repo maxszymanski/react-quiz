@@ -1,21 +1,60 @@
-import { useEffect } from 'react'
+import { useEffect, useReducer } from 'react'
 import Header from './Header'
 import Section from './Section'
+import Loader from './Loader'
+import Error from './Error'
+import StartScreen from './StartScreen'
 
-function App() {
+type Questions = {
+	question: string
+	options: string[]
+	correctOption: number
+	points: number
+}
+
+type State = {
+	questions: Questions[]
+	status: 'loading' | 'error' | 'ready' | 'active' | 'finished'
+}
+
+type Action = { type: 'dataRecived'; payload: Questions[] } | { type: 'dataFailed'; payload: Questions[] }
+
+const initlialState: State = {
+	questions: [],
+	status: 'loading',
+}
+
+const reducer = (state: State[], action: Action) => {
+	switch (action.type) {
+		case 'dataRecived':
+			return { ...state, questions: action.payload, status: 'ready' }
+		case 'dataFailed':
+			return { ...state, status: 'error' }
+
+		default:
+			throw new Error('Action Unnown')
+	}
+}
+
+const App = () => {
+	const [{ question, status }, dispatch] = useReducer(reducer, initlialState)
+
+	const numQuestions = questions
+
 	useEffect(() => {
 		fetch('http://localhost:8000/questions')
 			.then(res => res.json())
-			.then(data => console.log(data))
-			.catch(err => console.error(err))
+			.then((data: Questions[]) => dispatch({ type: 'dataRecived', payload: data }))
+			.catch(err => dispatch({ type: 'dataFailed' }))
 	}, [])
 
 	return (
 		<div className="app">
 			<Header />
 			<Section>
-				<p>1/15</p>
-				<p>Question?</p>
+				{status === 'loading' && <Loader />}
+				{status === 'error' && <Error />}
+				{status === 'ready' && <StartScreen />}
 			</Section>
 		</div>
 	)
