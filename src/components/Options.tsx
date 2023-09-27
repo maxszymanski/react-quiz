@@ -1,14 +1,8 @@
-function Options({
-	options,
-	dispatch,
-	answer,
-	correctOption,
-}: {
-	options: string[]
-	dispatch: () => void
-	answer: number | null
-	correctOption: number
-}) {
+import { useQuiz } from '../context/QuizContext'
+
+function Options() {
+	const { questionObject, answer, dispatch } = useQuiz()
+	const { options, correctOption } = questionObject
 	const hasAnswered: boolean = answer !== null
 	return (
 		<div className="options">
